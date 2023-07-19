@@ -1,0 +1,5 @@
+fasm src/boot/bootloader.asm
+fasm src/image.asm
+cp src/image.bin ./image.bin
+rm src/boot/bootloaders.bin
+rm src/image.bin
