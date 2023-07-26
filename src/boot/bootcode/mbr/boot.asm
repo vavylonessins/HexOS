@@ -89,31 +89,52 @@ m1: db    "Invalid partition table",0
 m2: db    "Error loading operating system",0
 m3: db    "Missing operating system",0
 
-times 1beh-$+$$ db 0x00
+times 1beh+90h-$+$$ db 0x00
 
 tab:                    ;partition table
-        db 0x80
+        db 80h
+        db 3
+        db 49
         db 0
-        db 0xc00/0x200+1
-        db 0
-        db 0x0B
-        db 0
-        db 0
-        db 0
+        db 0bh
+        db 0ffh
+        db 0fh
+        db 3fh
         dd 03fh
         dd 1024*1024*100/512
-        dw 0,0          ;partition 2 begin
-        dw 0,0          ;partition 2 end
-        dw 0,0          ;partition 2 relative sector
-        dw 0,0          ;partition 2 # of sectors
-        dw 0,0          ;partition 3 begin
-        dw 0,0          ;partition 3 end
-        dw 0,0          ;partition 3 relative sector
-        dw 0,0          ;partition 3 # of sectors
-        dw 0,0          ;partition 4 begin
-        dw 0,0          ;partition 4 end
-        dw 0,0          ;partition 4 relative sector
-        dw 0,0          ;partition 4 # of sectors
+
+        db 0h
+        db 3
+        db 49
+        db 0
+        db 0bh
+        db 0ffh
+        db 0fh
+        db 3fh
+        dd 03fh
+        dd 1024*1024*100/512
+
+        db 0h
+        db 3
+        db 49
+        db 0
+        db 0bh
+        db 0ffh
+        db 0fh
+        db 3fh
+        dd 03fh
+        dd 1024*1024*100/512
+
+        db 0h
+        db 3
+        db 49
+        db 0
+        db 0bh
+        db 0ffh
+        db 0fh
+        db 3fh
+        dd 03fh
+        dd 1024*1024*100/512
 
 times 510-$+$$ db 0x00
 
