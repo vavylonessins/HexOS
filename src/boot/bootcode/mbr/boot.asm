@@ -87,7 +87,7 @@ goboot:
 m1: db    "Invalid partition table",0
 m2: db    "Error loading operating system",0
 m3: db    "Missing operating system",0
-times 1beh-$+$$ db 0x00
+times 446-$+$$ db 0x00
 
 tab:                    ;partition table
         db 80h

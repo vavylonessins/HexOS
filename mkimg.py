@@ -38,7 +38,7 @@ image = image[:prtofs] + prt[:11] + image[prtofs+11:]  # fix version specificati
 image = image[:prtofs+46] + prt[46:] + image[prtofs+512:]  # add bootloader
 
 # phase 2 - fix image mbr
-image = mbr[:512] + image[512:]
+image = mbr[:446] + image[446:]
 
 with open("image.img", "wb") as f:
     f.write(image)
