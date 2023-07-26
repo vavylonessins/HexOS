@@ -4,7 +4,6 @@ relocated_org   equ 0600h
 buildtime_org   equ 0100h
 org_delta       equ (relocated_org - buildtime_org)
 
-        org buildtime_org
 start:
 
         cli             ;no interrupts for now
@@ -88,8 +87,7 @@ goboot:
 m1: db    "Invalid partition table",0
 m2: db    "Error loading operating system",0
 m3: db    "Missing operating system",0
-
-times 2beh+90h-400-$+$$ db 0x00
+times 1beh-$+$$ db 0x00
 
 tab:                    ;partition table
         db 80h
