@@ -1,5 +1,11 @@
-fasm src/boot/bootloader.asm
-fasm src/image.asm
-cp src/image.bin ./image.bin
-rm src/boot/bootloaders.bin
-rm src/image.bin
+fasm src/boot/bootcode/fat32/boot.asm
+fasm src/boot/bootcode/mbr/boot.asm
+chown -R talisman src
+fasm src/hexos/HXLDR.asm
+rm -rf dst/
+cp -r src dst
+chown -R talisman dst
+rm dst/boot/bootcode/fat32/boot.asm
+rm dst/boot/bootcode/mbr/boot.asm
+rm dst/hexos/HXLDR.asm
+./mkimg --dir=dst/hexos --prt=dst/boot/bootcode/fat32/boot.bin --mbr=dst/boot/bootcode/mbr/boot.bin --device=hdd
