@@ -55,7 +55,7 @@ boot:
     xor  word  ax,                           ax                          ;
     mov  word  ss,                           ax                          ;
     mov  word  sp,                           0x7c00                      ;
-    push word  BootSeg                       ;                           ;
+    push word  0                             ;                           ;
     pop  word  ds                            ;                           ;
 
     ;; Determine sector root directory starts on

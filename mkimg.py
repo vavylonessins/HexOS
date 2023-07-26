@@ -15,7 +15,7 @@ for a in sys.argv:
         device = a[9:]
 
 os.system("rm image.img")
-os.system("dd if=/dev/zero of=image.img bs=1M count=100")
+os.system("dd if=/dev/zero of=image.img bs=1M count=64")
 os.system("sudo mkfs.fat -F 32 image.img")
 if not os.path.exists("/mnt/vfat32"):
     os.system("sudo mkdir /mnt/vfat32")

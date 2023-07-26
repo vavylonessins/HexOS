@@ -1,1 +1,1 @@
-qemu-system-i386 -hda image.img -D log -d in_asm
+qemu-system-i386 -drive format=raw,file=image.img -D log -d in_asm
