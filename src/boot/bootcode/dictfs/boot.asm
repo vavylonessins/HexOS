@@ -93,7 +93,8 @@ _load_file_dictfs:
     ; fsinfo for next file entry
     add si, 0ah
     call endaz
-    inc si
+    sub si, 4
+    ; jmp $
     cmp byte [si], 0h
     ; it was last entry in fsinfo?
     ; oops, file doesn't exist!
