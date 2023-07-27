@@ -2,6 +2,13 @@ format binary
 
 use16
 
+macro %putc c {
+    pusha
+    mov ax, 0xE00 OR (c AND 0xFF)
+    int 0x10
+    popa
+}
+
 org 0x7C00
 
 
@@ -54,9 +61,8 @@ boot:
     ;; Setup the stack
     xor  word  ax,                           ax                          ;
     mov  word  ss,                           ax                          ;
-    mov  word  sp,                           0x7c00                      ;
-    push word  0                             ;                           ;
-    pop  word  ds                            ;                           ;
+    mov  word  sp,                           BootSeg                     ;
+    ;%putc "A"
 
     ;; Determine sector root directory starts on
     mov  byte  al,                           [BPB.Fats]                  ;
@@ -64,6 +70,7 @@ boot:
     add  word  ax,                           [BPB.ReservedSectors]       ;
     push word  ax                            ;                           ;
     xchg word  ax,                           cx                          ;
+    ;%putc "B"
 
     ;; Take into account size of directory (only know number of directory entries)
     mov  word  ax,                           sizeof.DIR_ENT              ;
