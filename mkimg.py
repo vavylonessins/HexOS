@@ -68,14 +68,17 @@ else:
                 files.append(d[0]+"/"+f)
         
         for i, f in enumerate(files):
-            files[i] = [f, os.path.getsize(f)]
+            #           path size                addr sectors
+            files[i] = [f,   os.path.getsize(f), -1,  os.path.getsize(f)//512+(1 if os.path.getsize(f) % 512 else 0)]
+            print(files[i])
         
         data = b""
 
         for n, f in enumerate(files):
             with open(f[0], "rb") as f:
                 raw = f.read()
-            files[n].append(len(data)//512)
+            print("addr:", len(data)//512+4)
+            files[n][2] = len(data)//512+4
             data += raw
             data += b"\x00"*(512 - (len(data) % 512))
 
@@ -83,7 +86,8 @@ else:
         fsinfo += b"\x00"*(512 - (len(fsinfo) % 512))
 
         for i in files:
-            fsinfo += b'\x80'+i[1].to_bytes(4, "little")+i[2].to_bytes(4, "little")+i[0].removeprefix("dst/hexos").encode("ascii")+b"\x00"
+            fsinfo += b'\x80'+i[1].to_bytes(4, "little")+i[2].to_bytes(4, "little")+\
+                i[3].to_bytes(1, "little")+i[0].removeprefix("dst/hexos").encode("ascii")+b"\x00"
 
         for i in dirs:
             fsinfo += b'\x90'+i.removeprefix("dst/hexos").encode("ascii")+b"\x00"
@@ -97,8 +101,8 @@ else:
 
         for i in files:
             print(i)
-            fsinfo += b'\x80'+i[1].to_bytes(4, "little")+(i[2]+infosize).to_bytes(4, "little")+\
-                ((512- (i[1] % 512))//512).to_bytes(1, "little")+i[0].removeprefix("dst/hexos").encode("ascii")+b"\x00"
+            fsinfo += b'\x80'+i[2].to_bytes(4, "little")+(i[1]+infosize).to_bytes(4, "little")+\
+                i[3].to_bytes(1, "little")+i[0].removeprefix("dst/hexos").encode("ascii")+b"\x00"
 
         for i in dirs:
             fsinfo += b'\x90'+i.removeprefix("dst/hexos").encode("ascii")+b"\x00"

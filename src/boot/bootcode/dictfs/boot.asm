@@ -13,88 +13,58 @@ macro print string& {
 ..finish:
     popa
 }
-macro printaz az {
-    push ax si
-    mov si, az
-    call _printaz
-    pop si ax
-}
-macro fastload c, h, s, sz, errcallb {
-    pusha
-    mov ah, 2h
-    mov al, sz
-    mov bx, word [dskbuf]
-    mov dh, h
-    mov dl, byte [BOOTDEV]
-    mov ch, c
-    mov cl, s
-    push word 0
-    pop es
-    int 13h
-    popa
-    jc errcallb
-}
-macro shortload sz, errcallb {
-    pusha
-    mov ah, 2h
-    mov al, sz
-    mov bx, word [dskbuf]
-    mov dl, byte [BOOTDEV]
-    push word 0
-    pop es
-    int 13h
-    popa
-    jc errcallb
-}
-macro lba2chs lba {
-    mov eax, lba
-    call _lba_to_chs
-}
-macro cmpaz a, b {
-    mov si, a
-    mov di, b
-    call _cmpaz
-}
-macro endaz az {
-    mov si, az
-    call _endaz
-}
 
 
 start:
-    print "FS reading", nl
+    push word 0 word 0
+    pop ds es
     mov byte [BOOTDEV], dl
-    fastload 0h, 0h, 3h, 1h, errio
+    mov ah, 2h
+    mov al, 1
+    mov bx, word [dskbuf]
+    mov dh, 0
+    mov dl, byte [BOOTDEV]
+    mov ch, 0
+    mov cl, 3
+    push word 0
+    pop es
+    int 13h
+    jc errio
     mov si, word [dskbuf]
 
 read_entry:
-    print "entry reading", nl
     cmp byte [si], 80h
     jne find_next_entry
-    print "is file", nl
 
 cmp_path:
     add si, 0ah
-    printaz si
-    print nl
-    cmpaz si, loader_path
+    mov di, loader_path
+    call cmpaz
     jne find_next_entry
-    print "is loader", nl
-    sub si, 9h
+    sub si, 0ah
 
 load_file:
-    lba2chs dword [si+1h]
     mov word [dskbuf], 2000h
-    shortload byte [si+9h], badfs
-    print "starting HXLDR", nl
-    jmp $
+    mov ah, 2h
+    mov al, byte [si+9h]
+    mov bx, 2000h
+    mov cl, byte [si+1h]
+    mov ch, byte [si+2h]
+    mov dh, byte [si+3h]
+    mov dl, byte [BOOTDEV]
+    push word 0
+    pop es
+    int 13h
+    jc badfs
+    mov dl, [BOOTDEV]
     jmp 0h:2000h
 
 find_next_entry:
-    print "not a loader", nl
     add si, 0ah
-    endaz si
+    call endaz
     inc si
+    cmp byte [si], 0h
+    je missingloader
     jmp read_entry
 
 errio:
@@ -103,6 +73,10 @@ errio:
 
 badfs:
     print "FS error", nl
+    jmp $
+
+missingloader:
+    print "/sys/hxldr.bin is missing", nl
     jmp $
 
 
@@ -126,7 +100,7 @@ _lenaz:
 ._e:
     ret
 
-_endaz:
+endaz:
     lodsb
     test al, al
     jz ._e
@@ -135,42 +109,10 @@ _endaz:
     inc si
     ret
 
-; deprecated
-;_cmpaz:
-    xor cx, cx
-    call _lenaz
-    mov dx, cx
-    xor cx, cx
-    xchg si, di
-    call _lenaz
-    cmp cx, dx
-    ;jne ._ne
+; ASSUME: SI - asciiz 1, DI - asciiz 2
+cmpaz:
     repnz cmpsb
-    ;jne ._ne
-    mov al, 0h
-    cmp al, al
     ret
-;._ne:
-    mov al, 0h
-    cmp al, 1h
-    ret
-
-_cmpaz:
-    xor al, al
-    mov cx, -1
-    repne scasb
-    ret
-
-_lba_to_chs:
-	xor dx, dx
-	div byte [spt]
-	inc dl
-	mov cl, dl
-	xor dx, dx
-	div byte [hpc]
-	mov dh, dl
-	mov ch, al
-	ret
 
 BOOTDEV db ?
 spt db 12h
