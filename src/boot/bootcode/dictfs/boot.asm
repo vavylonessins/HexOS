@@ -21,6 +21,10 @@ start:
     mov byte [BOOTDEV], dl
 
     call _load_file_dictfs
+    jc .error
+    jmp 0:2000h
+
+.error:
     jmp $
 
 _load_file_dictfs:
@@ -80,6 +84,7 @@ _load_file_dictfs:
     mov dl, byte [BOOTDEV]
     push word 0h
     pop es
+    jmp $
     int 13h
     jc ._badfs
     mov dl, [BOOTDEV]
@@ -92,9 +97,10 @@ _load_file_dictfs:
     ; this isn't our file, let's scan
     ; fsinfo for next file entry
     add si, 0ah
-    call endaz
-    sub si, 4
-    ; jmp $
+    call strlen
+    add si, ax
+    sub si, 2
+    ;jmp $
     cmp byte [si], 0h
     ; it was last entry in fsinfo?
     ; oops, file doesn't exist!
@@ -138,13 +144,37 @@ lenaz:
     ret
 
 endaz:
-    lodsb
-    test al, al
-    jz ._e
-    jmp lenaz
-._e:
-    inc si
+    xor al, al
+    repne cmpsb
     ret
+
+
+strlen:                   ; by our convention, first and the only argument
+                          ; is taken from rdi
+    xor ax, ax          ; rax will hold string length. If it is not 
+                          ; zeroed first, its value will be totally random
+
+.loop_:                    ; main loop starts here
+    push bx
+    mov bx, si
+    add bx, ax
+    cmp byte [bx], 0 ; Check if the current symbol is null-terminator.
+                          ; We absolutely need that 'byte' modifier since
+                          ; the left and the right part of cmp should be 
+                          ; of the same size. Right operand is immediate
+                          ; and holds no information about its size,
+                          ; hence we don't know how many bytes should be 
+                          ; taken from memory and compared to zero
+    pop bx
+    je .end               ; Jump if we found null-terminator
+
+    inc ax               ; Otherwise go to next symbol and increase 
+                          ; counter
+    jmp .loop_
+
+.end:
+    ret                   ; When we hit 'ret', rax should hold return value
+
 
 cmpaz:
     xor cx, cx

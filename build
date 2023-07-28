@@ -1,7 +1,9 @@
 rm -rf dst/
 cp -r src dst
-fasm dst/boot/bootcode/dictfs/boot.asm
+fasm dst/boot/bootcode/mbr/boot.asm
+fasm dst/boot/bootcode/fat32/boot_orig.asm
 fasm dst/hexos/sys/hxldr.asm
-rm dst/boot/bootcode/dictfs/boot.asm
+rm dst/boot/bootcode/mbr/boot.asm
+rm dst/boot/bootcode/fat32/boot_orig.asm
 rm dst/hexos/sys/hxldr.asm
-./mkimg --no-partitions --fs=dictfs --mbr=dst/boot/bootcode/dictfs/boot.bin --dir=dst/hexos --max=1048576
+./mkimg --prt=dst/boot/bootcode/fat32/boot_orig.bin --mbr=dst/boot/bootcode/mbr/boot.bin --dir=dst/hexos

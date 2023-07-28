@@ -43,12 +43,9 @@ if "--no-partitions" not in sys.argv or "--make-partitions" in sys.argv:
     image = image[:prtofs] + prt[:11] + image[prtofs+11:]  # fix version specification
     image = image[:prtofs+46] + prt[46:] + image[prtofs+512:]  # add bootloader
 
-    # phase 2 - fix vbr
-    image = image[:512] + vbr + image[1024:]
-
     # phase 3 - fix image mbr
-    #image = mbr[:446] + image[446:]
-    image = mbr[:512] + image[512:]
+    image = mbr[:446] + image[446:]
+    #image = mbr[:512] + image[512:]
 
     # DANGER
     #image = image[0xc00:]
