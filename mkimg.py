@@ -53,6 +53,12 @@ if "--no-partitions" not in sys.argv or "--make-partitions" in sys.argv:
     with open("image.raw", "wb") as f:
         f.write(image)
 else:
+    if fs == "ntrfs":
+        # hxfs is very interesting
+        # it tries to give for you the fastest experience
+        # so structures can be very big
+
+        data_offset = 1
     if fs == "dictfs":
         # dictfs is pretty simple:
         # it's just dict where keys are paths
@@ -74,8 +80,7 @@ else:
         for n, f in enumerate(files):
             with open(f[0], "rb") as f:
                 raw = f.read()
-            print("addr:", len(data)//512+4)
-            files[n][2] = len(data)//512+4
+            files[n][2] = len(data)//512+3
             data += raw
             data += b"\x00"*(512 - (len(data) % 512))
 
@@ -84,7 +89,8 @@ else:
 
         for i in files:
             fsinfo += b'\x80'+i[1].to_bytes(4, "little")+i[2].to_bytes(4, "little")+\
-                i[3].to_bytes(1, "little")+i[0].removeprefix("dst/hexos").encode("ascii")+b"\x00"
+                i[3].to_bytes(2, "little")+len(i[0].removeprefix("dist/hexos").encode("ascii")+b"\x00").to_bytes(2, "little")+\
+                    i[0].removeprefix("dist/hexos").encode("ascii")+b"\x00"
 
         for i in dirs:
             fsinfo += b'\x90'+i.removeprefix("dst/hexos").encode("ascii")+b"\x00"
@@ -99,10 +105,11 @@ else:
         for i in files:
             print(i)
             fsinfo += b'\x80'+i[2].to_bytes(4, "little")+(i[1]+infosize).to_bytes(4, "little")+\
-                i[3].to_bytes(1, "little")+i[0].removeprefix("dst/hexos").encode("ascii")+b"\x00"
+                i[3].to_bytes(2, "little")+len(i[0].removeprefix("dist/hexos").encode("ascii")+b"\x00").to_bytes(2, "little")+\
+                    i[0].removeprefix("dist/hexos").encode("ascii")+b"\x00"
 
         for i in dirs:
-            fsinfo += b'\x90'+i.removeprefix("dst/hexos").encode("ascii")+b"\x00"
+            fsinfo += b'\x90'+i.removeprefix("dist/hexos").encode("ascii")+b"\x00"
 
         fsinfo += b"\x00"*(512-(len(fsinfo) % 512))
 

@@ -13,6 +13,16 @@ macro print string& {
 ..finish:
     popa
 }
+struc dap_t {
+    .size db 10h
+    .zero db 0h
+    .number_of_sectors dw ?
+    .offset dw ?
+    .segment dw 0
+    .lba_low dd ?
+    .lba_high dw ?
+    .dzero dw 0
+}
 
 
 start:
@@ -188,6 +198,8 @@ BOOTDEV db ?
 dskbuf dw 100h
 _dskbuf_dest dw 2000h
 _file_to_load dw loader_path
+
+dap dap_t
 
 loader_path db "/sys/hxldr.bin", 0
 

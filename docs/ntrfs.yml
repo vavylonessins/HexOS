@@ -1,0 +1,85 @@
+epb:
+  fields:
+    flags:
+      type: short
+      bits:
+        .0: utf8_or_ascii_vol_label
+        .1: readonly
+        .2: actual_treecash
+        .3: actual_flatcash
+        .4: deprecated_addressing
+        .5: reserved
+        .6: reserved
+        .7: reserved
+        .8: reserved
+        .9: reserved
+        .10: reserved
+        .11: reserved
+        .12: reserved
+        .13: reserved
+        .14: reserved
+        .15: reserved
+      total_sectors: long
+      used_sectors: long
+      tree_root_descriptor: long
+      vol_label_length: byte
+      vol_label: str
+
+file_descriptor:
+  fields:
+    magic:
+      type: byte
+      value: 0x80
+    owner:
+      type: str
+      size: 0x10
+    byte: 0
+    group:
+      type: str
+      size: 0x10
+    byte: 0
+    owner_rights:
+      type: byte
+      bits:
+        .0: file if clear, directory if set (not a right)
+        .2: read
+        .3: write
+        .4: remove metadata
+        .5: execute
+        .6: list
+        .7: descry (file is visible)
+        .8: address (file is reachable), always set
+    group_rights:
+      type: byte
+      bits:
+        .0: reserved
+        .2: read
+        .3: write
+        .4: remove metadata
+        .5: execute
+        .6: list
+        .7: descry (file is visible)
+        .8: address (file is reachable)
+    others_rights:
+      type: byte
+      bits:
+        .0: reserved
+        .2: read
+        .3: write
+        .4: remove metadata
+        .5: execute
+        .6: list
+        .7: descry (file is visible)
+        .8: address (file is reachable)
+    next_descriptor: long
+    children_count: int
+    children: list(long) if it is file, children are sectors. \
+              otherwise other files descriptors
+    name_length: byte
+    name: str
+
+disk:
+  sectors:
+    mbr: 1
+    epb: 2
+    tree & data: 3...

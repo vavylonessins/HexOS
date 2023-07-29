@@ -2,15 +2,6 @@ format binary
 
 nl equ 0dh, 0ah
 
-macro print string& {
-    local ..toprint
-    local ..finish
-    mov si, ..toprint
-    call _printaz
-    jmp ..finish
-..toprint db string, 0h
-..finish:
-}
 macro dictfs_load path, dest {
     local ..toload
     local ..finish
@@ -24,6 +15,8 @@ macro dictfs_load path, dest {
 ..finish:
 }
 
+include "boot.inc"
+
 use16
 org 2000h
 
@@ -33,17 +26,14 @@ start:
     ; save boot device
     mov byte [BOOTDEV], dl
 
-    ; set video mode
+    ; clear console
     mov ax, 3h
     int 10h
 
-    jmp @f
-
+    ; hide cursor
     mov ax, 100h
     mov cx, 2607h
-    int 10h
-
-@@:
+    ;int 10h
 
     print "HXLDR started", nl
 
@@ -79,76 +69,57 @@ failure:
 
 
 _load_file_dictfs:
-    print "Required: "
-    mov si, word [_file_to_load]
-    call _printaz
-    print nl
+    printnep "N "
+    printaznp word [_file_to_load]
+    printaznsp NL
     ; load volume data
-    mov ah, 2h
-    mov al, 1h
-    mov bx, word [dskbuf]
-    mov dh, 0h
-    mov dl, byte [BOOTDEV]
-    mov ch, 0h
-    mov cl, 3h
-    push word 0h
-    pop es
-    int 13h
-    print "FSINFO loaded to RAM", nl
+    load 1 sector from sector 2 device [BOOTDEV] to [dskbuf]
     jc ._errio
-    mov si, bx
+    print "SLA", nl ; FSINFO LOAD SUCCESS
+    mov si, word [dskbuf]
 
 ._read_entry:
-    pusha
-    print "Analyzing entry...", nl
-    popa
+    printnep "ZT", nl ; ANALYZING ENTRY
     ; entry is a file?
+    printnp "TO "
+    putcnp [si]
+    printaznsp NL
     cmp byte [si], 80h
     jne ._find_next_entry
 
-    pusha
-    print "It is a file", nl
-    popa
+    print "IF", nl
 
     ; yes, it is a file, let's check if it is what we want
-    add si, 0ah
-    pusha
-    call _printaz
-    print nl
-    popa
+    add si, 0dh
+    printaznep
+    printaznsp NL
     mov di, word [_file_to_load]
-    call cmpaz
+    xor cx, cx
+    push si
+    call lenaz
+    pop si
+    repz cmpsb
     jnz ._find_next_entry
-    sub si, 0ah
+    sub si, 0dh
 
-    pusha
-    print "It is required file", nl
-    popa
+    print "INF", nl
 
     ; it is our file, let's load it
-    mov ah, 2h
-    mov al, byte [si+9h]
-    mov bx, word [_dskbuf_dest]
-    mov cl, byte [si+1h]
-    mov ch, byte [si+2h]
-    mov dh, byte [si+3h]
-    mov dl, byte [BOOTDEV]
-    push word 0h
-    pop es
-    int 13h
+    sub si, 0eh
+    load [si+9h] sectors from sector [si+1] device [BOOTDEV] to [_dskbuf_dest]
     jc ._badfs
-    mov dl, [BOOTDEV]
+    mov dl, byte [BOOTDEV]
     clc
     ret
 
 ._find_next_entry:
-    pusha
-    print "It isn't required file", nl
+    print "IENF", nl
     ; this isn't our file, let's scan
     ; fsinfo for next file entry
-    add si, 0ah
-    call endaz
-    inc si
+    add si, 0bh
+    mov ax, word [si]
+    add si, ax
+    add si, 2
     cmp byte [si], 0h
     ; it was last entry in fsinfo?
     ; oops, file doesn't exist!
@@ -156,20 +127,19 @@ _load_file_dictfs:
     jmp ._read_entry
 
 ._errio:
-    print "IO error", nl
+    print "E1", nl
     stc
     ret
 
 ._badfs:
-    print "FS error", nl
+    print "E2", nl
     stc
     ret
 
 ._missing:
-    print "file is missing", nl
+    print "E3", nl
     stc
     ret
-
 
 _printaz:
     mov ah, 0eh
@@ -191,24 +161,10 @@ lenaz:
 ._e:
     ret
 
-endaz:
-    lodsb
-    test al, al
-    jz ._e
-    jmp lenaz
-._e:
-    inc si
-    ret
-
-cmpaz:
-    xor cx, cx
-    push si
-    call lenaz
-    pop si
-    repz cmpsb
-    ret
-
+NL db 0dh, 0ah, 0h
 BOOTDEV db ?
 dskbuf dw 100h
-_dskbuf_dest dw 100h
+_dskbuf_dest dw 5000h
 _file_to_load dw ?
+
+dap dap_t

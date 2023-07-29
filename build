@@ -1,9 +1,9 @@
-rm -rf dst/
-cp -r src dst
-fasm dst/boot/bootcode/mbr/boot.asm
-fasm dst/boot/bootcode/fat32/boot_orig.asm
-fasm dst/hexos/sys/hxldr.asm
-rm dst/boot/bootcode/mbr/boot.asm
-rm dst/boot/bootcode/fat32/boot_orig.asm
-rm dst/hexos/sys/hxldr.asm
-./mkimg --prt=dst/boot/bootcode/fat32/boot_orig.bin --mbr=dst/boot/bootcode/mbr/boot.bin --dir=dst/hexos
+rm -rf dist 2>/dev/null
+cp -r src dist
+fasm dist/boot/dictfs/boot.asm
+fasm dist/hexos/sys/hxldr.asm
+fasm dist/hexos/sys/hexos.asm
+find dist -maxdepth 10 -type f -name "*.asm" -delete 
+find dist -maxdepth 10 -type f -name "*.inc" -delete 
+python3 mkimg.py --no-partitions --fs=dictfs --mbr=dist/boot/dictfs/boot.bin --dir=dist/hexos --max=1048576
+
