@@ -1,2 +1,2 @@
-qemu-system-i386 -drive format=raw,file=image.raw -D log -d in_asm -singlestep 2>/dev/null
+qemu-system-i386 -drive format=raw,file=image.raw -D log -d in_asm -s -S 2>/dev/null
 echo
